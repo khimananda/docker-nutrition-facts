@@ -10,6 +10,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -23,8 +24,17 @@ import (
 	"github.com/khimananda/docker-nutrition-facts/internal/render"
 )
 
-// Set by GoReleaser.
+// Set by GoReleaser. go install builds fall back to the module version.
 var version = "dev"
+
+func init() {
+	if version != "dev" {
+		return
+	}
+	if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
+		version = strings.TrimPrefix(bi.Main.Version, "v")
+	}
+}
 
 const repoURL = "https://github.com/khimananda/docker-nutrition-facts"
 
