@@ -1,0 +1,14 @@
+# One footnote per line. Keep it kind and keep it short (under 44 characters).
+# Lines starting with # are ignored.
+May contain traces of node_modules.
+Not a significant source of patches.
+Made in a facility that also handles YAML.
+Serving suggestion: run with --read-only.
+Shake well before docker compose up.
+Keep out of reach of production.
+Individual results may vary by kernel.
+Store in a cool, dry registry.
+Do not consume after the CVE is published.
+This label is a joke. The numbers are not.
+Contents may shift during docker build.
+Best served with a HEALTHCHECK.

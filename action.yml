@@ -1,0 +1,117 @@
+name: Docker Nutrition Facts
+description: Post a Nutrition Facts label for a container image on your pull request
+author: khimananda
+branding:
+  icon: package
+  color: green
+
+inputs:
+  image:
+    description: Image reference to label, for example ghcr.io/org/app:pr-42
+    required: true
+  local:
+    description: Read the image from the runner's Docker daemon (use after docker build)
+    default: "false"
+  platform:
+    description: Platform for multi-arch images
+    default: linux/amd64
+  comment:
+    description: Upsert a pull request comment with the label
+    default: "true"
+  fail-below:
+    description: Fail the step when the grade is worse than this letter (A-F). Empty means never fail
+    default: ""
+  version:
+    description: docker-nutrition release to use, for example v1.0.0
+    default: latest
+  github-token:
+    description: Token used to comment on the pull request
+    default: ${{ github.token }}
+
+outputs:
+  grade:
+    description: Letter grade A-F
+    value: ${{ steps.label.outputs.grade }}
+  score:
+    description: Score 0-100
+    value: ${{ steps.label.outputs.score }}
+
+runs:
+  using: composite
+  steps:
+    - name: Install docker-nutrition
+      shell: bash
+      env:
+        VERSION: ${{ inputs.version }}
+        GH_TOKEN: ${{ inputs.github-token }}
+        REPO: khimananda/docker-nutrition-facts
+      run: |
+        set -euo pipefail
+        case "${RUNNER_ARCH}" in X64) arch=amd64 ;; ARM64) arch=arm64 ;; *) echo "unsupported runner arch ${RUNNER_ARCH}"; exit 1 ;; esac
+        os=$(echo "${RUNNER_OS}" | tr '[:upper:]' '[:lower:]'); [ "$os" = macos ] && os=darwin
+        if [ "$VERSION" = latest ]; then VERSION=$(gh release view --repo "$REPO" --json tagName -q .tagName); fi
+        dir="${RUNNER_TEMP}/docker-nutrition"; mkdir -p "$dir"
+        file="docker-nutrition_${VERSION#v}_${os}_${arch}.tar.gz"
+        gh release download "$VERSION" --repo "$REPO" --pattern "$file" --pattern checksums.txt --dir "$dir" --clobber
+        (cd "$dir" && grep " $file\$" checksums.txt | sha256sum -c -)
+        tar -xzf "$dir/$file" -C "$dir" docker-nutrition
+        echo "$dir" >> "$GITHUB_PATH"
+
+    - name: Print the label
+      id: label
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+        LOCAL: ${{ inputs.local }}
+        PLATFORM: ${{ inputs.platform }}
+        FAIL_BELOW: ${{ inputs.fail-below }}
+      run: |
+        set -uo pipefail
+        args=("$IMAGE" --platform "$PLATFORM")
+        [ "$LOCAL" = true ] && args+=(--local)
+        out="${RUNNER_TEMP}/docker-nutrition"
+        docker-nutrition "${args[@]}" --format json > "$out/label.json" || exit 1
+        docker-nutrition "${args[@]}" --format plain
+        docker-nutrition "${args[@]}" --format markdown > "$out/label.md"
+        cat "$out/label.md" >> "$GITHUB_STEP_SUMMARY"
+        grade=$(jq -r .grade "$out/label.json"); score=$(jq -r .score "$out/label.json")
+        echo "grade=$grade" >> "$GITHUB_OUTPUT"; echo "score=$score" >> "$GITHUB_OUTPUT"
+        failed=false
+        if [ -n "$FAIL_BELOW" ]; then
+          docker-nutrition "${args[@]}" --format json --fail-below "$FAIL_BELOW" > /dev/null
+          rc=$?
+          [ $rc -eq 2 ] && failed=true
+          [ $rc -ne 0 ] && [ $rc -ne 2 ] && exit $rc
+        fi
+        echo "failed=$failed" >> "$GITHUB_OUTPUT"
+
+    - name: Comment on the pull request
+      if: inputs.comment == 'true' && github.event.pull_request.number
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+        PR: ${{ github.event.pull_request.number }}
+        REPO: ${{ github.repository }}
+      run: |
+        set -euo pipefail
+        body_file="${RUNNER_TEMP}/docker-nutrition/label.md"
+        marker='<!-- docker-nutrition-facts -->'
+        id=$(gh api "repos/$REPO/issues/$PR/comments" --paginate \
+          --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -n1)
+        if [ -n "$id" ]; then
+          gh api -X PATCH "repos/$REPO/issues/comments/$id" -F body=@"$body_file" > /dev/null
+          echo "Updated comment $id"
+        else
+          gh api -X POST "repos/$REPO/issues/$PR/comments" -F body=@"$body_file" > /dev/null
+          echo "Created comment"
+        fi
+
+    - name: Enforce the grade
+      if: steps.label.outputs.failed == 'true'
+      shell: bash
+      env:
+        GRADE: ${{ steps.label.outputs.grade }}
+        FAIL_BELOW: ${{ inputs.fail-below }}
+      run: |
+        echo "::error::Nutrition grade $GRADE is below the required $FAIL_BELOW"
+        exit 1

@@ -1,0 +1,43 @@
+{
+  "ref": "docker.io/library/ubuntu:latest",
+  "platform": "linux/amd64",
+  "size_bytes": 1240000000,
+  "size_is_compressed": true,
+  "size_daily_value_pct": 1240,
+  "layers": 37,
+  "metadata_only_steps": 1,
+  "layers_daily_value_pct": 247,
+  "package_cache_layers": 1,
+  "curl_pipe_sh_steps": 1,
+  "secret_looking_env": [
+    "DB_PASSWORD"
+  ],
+  "unpinned_install_commands": 1,
+  "healthcheck": false,
+  "runs_as_root": true,
+  "base_image": "docker.io/library/ubuntu:22.04",
+  "created": "2026-03-03T12:00:00Z",
+  "age_days": 212,
+  "exposed_ports": 0,
+  "allergens": [
+    ":latest",
+    "root",
+    "curl | sh",
+    "sudo"
+  ],
+  "score": 0,
+  "grade": "F",
+  "deductions": [
+    "-15 runs as root",
+    "-10 uses the :latest tag",
+    "-15 pipes downloads into a shell",
+    "-15 secret-looking env vars",
+    "-5 package cache left in layers",
+    "-5 unpinned package installs",
+    "-5 no HEALTHCHECK",
+    "-20 over 1 GB",
+    "-5 more than 30 layers",
+    "-10 built more than 180 days ago"
+  ],
+  "footnote": "May contain traces of node_modules."
+}

@@ -1,0 +1,24 @@
+Nutrition Facts
+ubuntu:latest  (linux/amd64)
+Serving size 1 container
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Amount per serving               % Daily Value
+──────────────────────────────────────────────
+Calories (compressed)             1.2 GB 1240%
+Total Layers                          37  247%
+  Metadata-only steps                  1      
+Saturated Fat (pkg cache)        1 layer   50%
+Trans Fat (curl | sh)             1 step   50%
+Sodium (secret-ish ENV)            1 var   50%
+Sugar (unpinned installs)          1 cmd   50%
+Protein (HEALTHCHECK)               none    0%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Runs as root                         YES      
+Base image                  ubuntu:22.04      
+Best before           built 212 days ago      
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+CONTAINS: :latest, root, curl | sh, sudo
+Grade: F                                 0/100
+──────────────────────────────────────────────
+* Daily values based on a 100 MB diet.
+* May contain traces of node_modules.

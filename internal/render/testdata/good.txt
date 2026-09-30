@@ -1,0 +1,26 @@
+┌────────────────────────────────────────────────┐
+│ Nutrition Facts                                │
+│ gcr.io/distroless/static-debian12:nonroot  (l… │
+│ Serving size 1 container                       │
+│ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│ Amount per serving               % Daily Value │
+│ ────────────────────────────────────────────── │
+│ Calories (compressed)             2.0 MB    2% │
+│ Total Layers                           3   20% │
+│   Metadata-only steps                  0       │
+│ Saturated Fat (pkg cache)       0 layers    0% │
+│ Trans Fat (curl | sh)            0 steps    0% │
+│ Sodium (secret-ish ENV)           0 vars    0% │
+│ Sugar (unpinned installs)         0 cmds    0% │
+│ Protein (HEALTHCHECK)                yes  100% │
+│ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│ Runs as root                          no       │
+│ Base image                       scratch       │
+│ Best before       timeless (epoch build)       │
+│ ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ │
+│ CONTAINS: no known allergens                   │
+│ Grade: A                               100/100 │
+│ ────────────────────────────────────────────── │
+│ * Daily values based on a 100 MB diet.         │
+│ * Keep out of reach of production.             │
+└────────────────────────────────────────────────┘

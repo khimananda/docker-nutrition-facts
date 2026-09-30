@@ -1,0 +1,64 @@
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+version: 2
+
+project_name: docker-nutrition-facts
+
+before:
+  hooks:
+    - go mod tidy
+    - go test ./...
+
+builds:
+  - id: docker-nutrition
+    main: ./cmd/docker-nutrition
+    binary: docker-nutrition
+    env:
+      - CGO_ENABLED=0
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ldflags:
+      - -s -w -X main.version={{.Version}}
+
+archives:
+  - formats: [tar.gz]
+    name_template: "docker-nutrition_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+    files:
+      - LICENSE
+      - README.md
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  filters:
+    exclude: ["^docs:", "^test:", "^chore:"]
+
+homebrew_casks:
+  - name: docker-nutrition
+    binaries: [docker-nutrition]
+    repository:
+      owner: khimananda
+      name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    directory: Casks
+    homepage: https://github.com/khimananda/docker-nutrition-facts
+    description: Nutrition Facts labels for container images
+    license: MIT
+    caveats: |
+      To use it as a Docker CLI plugin (docker nutrition IMAGE):
+        mkdir -p ~/.docker/cli-plugins
+        ln -sf #{HOMEBREW_PREFIX}/bin/docker-nutrition ~/.docker/cli-plugins/docker-nutrition
+    hooks:
+      post:
+        install: |
+          if OS.mac?
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/docker-nutrition"]
+          end
+
+release:
+  footer: |
+    Install: `brew install khimananda/tap/docker-nutrition`
