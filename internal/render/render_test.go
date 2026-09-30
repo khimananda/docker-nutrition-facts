@@ -137,3 +137,18 @@ func TestShortName(t *testing.T) {
 		}
 	}
 }
+
+func TestLongValuesKeepTheirLabel(t *testing.T) {
+	lipgloss.SetColorProfile(termenv.Ascii)
+	r := fixtures()["good"]
+	r.BaseImage = "gcr.io/distroless/static-debian12:nonroot@sha256:0123456789abcdef"
+	out := Text(r)
+	if !strings.Contains(out, "Base image") || !strings.Contains(out, "gcr.io/distroless/") {
+		t.Errorf("label or value missing:\n%s", out)
+	}
+	for i, l := range strings.Split(strings.TrimRight(out, "\n"), "\n") {
+		if w := lipgloss.Width(l); w != Width+4 {
+			t.Errorf("line %d is %d wide: %q", i, w, l)
+		}
+	}
+}

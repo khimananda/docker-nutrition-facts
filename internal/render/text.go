@@ -79,10 +79,13 @@ func factLine(row Row, st func(lipgloss.Style, string) string) string {
 	if row.Indent {
 		label = "  " + label
 	}
+	// Long values, like a full base image name, are shortened instead of the label.
+	if room := Width - lipgloss.Width(label) - (dvCol + 1) - 1; lipgloss.Width(row.Amount) > room {
+		row.Amount = fit(row.Amount, room)
+	}
 	right := row.Amount + pad(dvCol+1-len(row.DV)) + row.DV
 	space := Width - lipgloss.Width(label) - lipgloss.Width(right)
 	if space < 1 {
-		label = fit(label, Width-lipgloss.Width(right)-1)
 		space = 1
 	}
 	amt := row.Amount
